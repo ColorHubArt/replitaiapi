@@ -1,4 +1,5 @@
 python
-requests
-duckpy
-flask
+pyppeteer 
+aioconsole 
+replit-ai 
+flask 
