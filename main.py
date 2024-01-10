@@ -26,4 +26,5 @@ def get_ai_response(prompt):
     return response.responses[0].candidates[0].message.content
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    # Change host to '0.0.0.0' to make the app accessible from any network interface
+    app.run(debug=True, host='0.0.0.0')
