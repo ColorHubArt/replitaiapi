@@ -1,30 +1,29 @@
-from flask import Flask, jsonify, request
-from duckpy import Client
+from flask import Flask
+from replit.ai.modelfarm import ChatExample, ChatMessage, ChatModel, ChatSession
+from urllib.parse import unquote
 
 app = Flask(__name__)
+model = ChatModel("chat-bison")
 
-@app.route('/search', methods=['GET'])
-def search():
-    query = request.args.get('query', '')  # Get the search parameter from the URL
-    if not query:
-        return jsonify({"error": "Empty search query"}), 400
+@app.route('/prompt/<path:prompt>')
+def get_ai_response(prompt):
+    prompt = unquote(prompt)  # URL-decode the prompt
+    response = model.chat([
+      ChatSession(
+        context="You are a normal AI bot",
+        examples=[
+          ChatExample(
+            input=ChatMessage(content="1 + 1"),
+            output=ChatMessage(content="2")
+          )
+        ],
+        messages=[
+          ChatMessage(author="USER", content=prompt),
+        ],
+      )
+    ], temperature=0.2)
 
-    try:
-        client = Client()
-        results = client.search(query)
-        # Transform results into JSON-friendly format
-        search_results = []
-        for result in results:
-            search_results.append({
-                'title': result.title,
-                'url': result.url,
-                'description': result.description
-            })
-
-        return jsonify(search_results)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    return response.responses[0].candidates[0].message.content
 
 if __name__ == '__main__':
-    # Change host to '0.0.0.0' to make the app accessible from any network interface
-    app.run(debug=True, host='0.0.0.0')
+    app.run(host='0.0.0.0')
